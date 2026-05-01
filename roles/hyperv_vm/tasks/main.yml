@@ -42,13 +42,9 @@
     state: running
 
 - name: Configure Windows connectivity
-  ansible.windows.win_shell: "{{ lookup('template', 'windows_postinstall.ps1.j2') }}"
-  register: _post # noqa: var-naming[no-role-prefix]
-  until: _post.rc == 0
-  retries: 20
-  delay: 10
+  ansible.builtin.include_tasks: windows_post.yml
   when: hyperv_vm_type == 'windows'
 
 - name: Clean up RHEL disk attachments
-  ansible.builtin.include_tasks: rhel_cleanup.yml
+  ansible.builtin.include_tasks: rhel_post.yml
   when: hyperv_vm_type == 'rhel'

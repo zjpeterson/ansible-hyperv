@@ -1,0 +1,16 @@
+---
+- name: Wait for PS Direct to start working
+  ansible.windows.win_shell: |
+    $password = "{{ hyperv_vm_admin_pass }}"
+    $secString = ConvertTo-SecureString $password -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential ("Administrator", $secString)
+    
+    # This just returns True. If the VM isn't ready, the connection fails.
+    Invoke-Command -VMName "{{ hyperv_vm_name }}" -Credential $cred -ScriptBlock { $true }
+  register: _post # noqa: var-naming[no-role-prefix]
+  until: _post.rc == 0
+  retries: 20
+  delay: 10
+
+- name: Configure Windows connectivity
+  ansible.windows.win_shell: "{{ lookup('template', 'windows_postinstall.ps1.j2') }}"
