@@ -1,0 +1,29 @@
+---
+- name: Wait for VM to be off
+  microsoft.hyperv.hv_vm_info:
+    name: "{{ hyperv_vm_name }}"
+  register: _info # noqa: var-naming[no-role-prefix]
+  until: _info.vms.0.state == 'Off'
+  retries: 30
+  delay: 30
+
+- name: Detach OEMDRV
+  microsoft.hyperv.hv_hard_disk:
+    path: D:\OEMDRV.vhdx
+    vm_name: "{{ hyperv_vm_name }}"
+    state: absent
+
+- name: Clean up OEMDRV.vhdx
+  ansible.windows.win_file:
+    path: D:\OEMDRV.vhdx
+    state: absent
+
+- name: Detach boot iso
+  microsoft.hyperv.hv_dvd_drive:
+    state: ejected
+    vm_name: "{{ hyperv_vm_name }}"
+
+- name: Turn VM back on
+  microsoft.hyperv.hv_vm_state:
+    name: "{{ hyperv_vm_name }}"
+    state: running

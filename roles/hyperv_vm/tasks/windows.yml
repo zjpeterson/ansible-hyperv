@@ -1,0 +1,40 @@
+---
+# - name: Stage Windows image
+#   ansible.windows.win_copy:
+#     src: "{{ hyperv_vm_win_img }}"
+#     dest: D:\{{ hyperv_vm_win_img }}
+
+- name: Copy Windows image
+  ansible.windows.win_copy:
+    src: D:\{{ hyperv_vm_win_img }}
+    dest: D:\VHD\{{ hyperv_vm_name }}.vhdx
+    remote_src: true
+
+- name: Set disk list
+  ansible.builtin.set_fact:
+    _disk_list:
+      - D:\VHD\{{ hyperv_vm_name }}.vhdx
+
+- name: Configure secure boot
+  microsoft.hyperv.hv_vm_boot:
+    name: "{{ hyperv_vm_name }}"
+    secure_boot: true
+    secure_boot_template: MicrosoftWindows
+
+- name: Copy unattend.xml
+  ansible.windows.win_template:
+    src: unattend.xml.j2
+    dest: D:\unattend.xml
+
+- name: Inject unattend.xml into VHD
+  ansible.windows.win_shell: "{{ lookup('template', 'unattend.ps1.j2') }}"
+
+- name: Clean up unattend.xml
+  ansible.windows.win_file:
+    path: D:\unattend.xml
+    state: absent
+
+- name: Expand the VHDX file if needed
+  ansible.windows.win_shell: |
+    Resize-VHD -Path "D:\VHD\{{ hyperv_vm_name }}.vhdx" -SizeBytes {{ hyperv_vm_disk_gb }}GB
+  when: hyperv_vm_disk_gb | int > 64

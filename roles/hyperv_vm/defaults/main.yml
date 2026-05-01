@@ -1,0 +1,15 @@
+---
+hyperv_vm_name: new-vm
+hyperv_vm_ip:
+hyperv_vm_prefix:
+hyperv_vm_gw:
+hyperv_vm_vlan:
+hyperv_vm_dns: 1.1.1.1
+hyperv_vm_type: windows # or rhel
+hyperv_vm_cpu: 2
+hyperv_vm_mem_gb: 4
+hyperv_vm_disk_gb: 100
+hyperv_vm_admin_pass:
+# RHEL specific
+hyperv_vm_rhel_org:
+hyperv_vm_rhel_activation_key:

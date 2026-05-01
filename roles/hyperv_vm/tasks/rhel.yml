@@ -1,0 +1,43 @@
+---
+# - name: Stage RHEL boot iso
+#   ansible.windows.win_copy:
+#     src: "{{ hyperv_vm_rhel_boot }}"
+#     dest: D:\{{ hyperv_vm_rhel_boot }}
+
+- name: Establish kickstart
+  ansible.windows.win_template:
+    src: ks.cfg.j2
+    dest: D:\ks.cfg
+
+- name: Make VHD from kickstart
+  ansible.builtin.script: kickstart_vhd.ps1
+
+- name: Clean up ks.cfg
+  ansible.windows.win_file:
+    path: D:\ks.cfg
+    state: absent
+
+- name: Attach boot iso
+  microsoft.hyperv.hv_dvd_drive:
+    state: present
+    path: D:\{{ hyperv_vm_rhel_boot }}
+    vm_name: "{{ hyperv_vm_name }}"
+
+- name: Make VM disk
+  microsoft.hyperv.hv_vhd:
+    path: D:\VHD\{{ hyperv_vm_name }}.vhdx
+    state: present
+    size_bytes: "{{ hyperv_vm_disk_gb }}GB"
+    vhd_type: dynamic
+
+- name: Set disk list
+  ansible.builtin.set_fact:
+    _disk_list:
+      - D:\OEMDRV.vhdx
+      - D:\VHD\{{ hyperv_vm_name }}.vhdx
+
+- name: Configure secure boot
+  microsoft.hyperv.hv_vm_boot:
+    name: "{{ hyperv_vm_name }}"
+    secure_boot: true
+    secure_boot_template: MicrosoftUEFICertificateAuthority

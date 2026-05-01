@@ -1,0 +1,17 @@
+lang en_US
+keyboard --xlayouts='us'
+timezone America/Chicago --utc
+user --name=ansible --groups=wheel --password={{ hyperv_vm_admin_pass | password_hash('sha512') }} --iscrypted
+poweroff
+rhsm --organization={{ hyperv_vm_rhel_org }} --activation-key={{ hyperv_vm_rhel_activation_key }}
+bootloader --append="rhgb quiet"
+zerombr
+clearpart --all --initlabel
+autopart
+network --hostname={{ hyperv_vm_name }} --bootproto=static --ip={{ hyperv_vm_ip }} --netmask={{ (hyperv_vm_ip ~ '/' ~ hyperv_vm_prefix) | ansible.utils.ipaddr('netmask') }} --gateway={{ hyperv_vm_gw }} --nameserver={{ hyperv_vm_dns }} --activate
+firstboot --disable
+selinux --enforcing
+%packages
+@^minimal-environment
+kexec-tools
+%end

@@ -1,0 +1,7 @@
+---
+- name: Install Hyper-V VM
+  hosts: hypervisor
+  gather_facts: false
+
+  roles:
+    - hyperv_vm

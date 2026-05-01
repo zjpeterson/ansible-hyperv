@@ -1,0 +1,4 @@
+.ansible
+playbooks/collections
+inventory
+ansible-navigator.log

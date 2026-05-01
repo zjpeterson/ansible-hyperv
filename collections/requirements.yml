@@ -1,0 +1,8 @@
+---
+collections:
+  - ansible.windows
+  - ansible.utils
+  # need a yet-unreleased bugfix
+  - name: https://github.com/ansible-collections/microsoft.hyperv.git
+    type: git
+    version: main

@@ -1,0 +1,3 @@
+---
+hyperv_vm_rhel_boot: rhel-10.1-x86_64-dvd.iso
+hyperv_vm_win_img: 26100.1742.amd64fre.ge_release_svc_refresh.240906-0331_server_serverdatacentereval_en-us.vhdx

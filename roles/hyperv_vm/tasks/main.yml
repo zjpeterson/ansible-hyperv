@@ -1,0 +1,54 @@
+---
+- name: Make VM
+  microsoft.hyperv.hv_vm:
+    name: "{{ hyperv_vm_name }}"
+    state: present
+    generation: 2
+    memory_startup_bytes: "{{ hyperv_vm_mem_gb }}GB"
+    boot_device: CD
+
+- name: Disable network boot
+  ansible.windows.win_shell: |
+    $fw = Get-VMFirmware -VMName "{{ hyperv_vm_name }}"
+    $newOrder = $fw.BootOrder | Where-Object { $_.BootType -ne 'Network' }
+    Set-VMFirmware -VMName "{{ hyperv_vm_name }}" -BootOrder $newOrder
+
+- name: Set vCPU
+  microsoft.hyperv.hv_processor:
+    name: "{{ hyperv_vm_name }}"
+    count: "{{ hyperv_vm_cpu }}"
+
+- name: Run OS-specific tasks
+  ansible.builtin.include_tasks: "{{ hyperv_vm_type }}.yml"
+
+- name: Attach disks
+  microsoft.hyperv.hv_hard_disk:
+    path: "{{ item }}"
+    vm_name: "{{ hyperv_vm_name }}"
+    state: present
+  loop: "{{ _disk_list }}"
+
+- name: Attach networking
+  microsoft.hyperv.hv_network_adapter:
+    vm_name: "{{ hyperv_vm_name }}"
+    switch_name: vSwitch
+    name: Network Adapter
+    vlan_mode: Access
+    vlan_id: "{{ hyperv_vm_vlan }}"
+
+- name: Start VM
+  microsoft.hyperv.hv_vm_state:
+    name: "{{ hyperv_vm_name }}"
+    state: running
+
+- name: Configure Windows connectivity
+  ansible.windows.win_shell: "{{ lookup('template', 'windows_postinstall.ps1.j2') }}"
+  register: _post # noqa: var-naming[no-role-prefix]
+  until: _post.rc == 0
+  retries: 20
+  delay: 10
+  when: hyperv_vm_type == 'windows'
+
+- name: Clean up RHEL disk attachments
+  ansible.builtin.include_tasks: rhel_cleanup.yml
+  when: hyperv_vm_type == 'rhel'

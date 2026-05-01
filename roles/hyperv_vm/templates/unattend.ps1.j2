@@ -1,0 +1,16 @@
+$vhdxPath = "D:\VHD\{{ hyperv_vm_name }}.vhdx"
+$xmlSource = "D:\unattend.xml"
+
+# Mount the VHDX
+$disk = Mount-VHD -Path $vhdxPath -PassThru | Get-Disk
+$driveLetter = ($disk | Get-Partition | Where-Object AccessPaths -like "?:\*").DriveLetter
+
+# Windows looks for answer files in this exact folder
+$pantherPath = "$($driveLetter):\Windows\Panther"
+if (-not (Test-Path $pantherPath)) { New-Item -ItemType Directory -Path $pantherPath | Out-Null }
+
+# Copy it in
+Copy-Item -Path $xmlSource -Destination "$pantherPath\unattend.xml" -Force
+
+# Dismount it so Hyper-V can boot it
+Dismount-VHD -Path $vhdxPath
