@@ -6,7 +6,12 @@ $scriptBlock = {
     # --- 0. EXPAND C: DRIVE ---    
     # Finds the maximum available space on the disk and stretches the C: partition to fill it
     $size = Get-PartitionSupportedSize -DriveLetter C
-    Resize-Partition -DriveLetter C -Size $size.SizeMax
+    $currentSize = (Get-Partition -DriveLetter C).Size
+
+    # Only expand if there is more than 1MB of free space available
+    if ($size.SizeMax -gt ($currentSize + 1MB)) {
+        Resize-Partition -DriveLetter C -Size $size.SizeMax
+    }
 
     # --- 1. NETWORK CONFIGURATION ---
     $netAdapter = Get-NetAdapter | Where-Object Status -eq "Up"
