@@ -1,0 +1,15 @@
+---
+- name: Install Linux updates
+  hosts: role_linux_server
+  become: true
+
+  tasks:
+    - name: Install updates
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+      notify: Reboot
+
+  handlers:
+    - name: Reboot
+      ansible.builtin.reboot:
