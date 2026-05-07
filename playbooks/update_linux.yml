@@ -4,6 +4,12 @@
   become: true
 
   tasks:
+    - name: Force update GPG keys
+      ansible.builtin.dnf:
+        name: redhat-release
+        state: latest
+        disable_gpg_check: true
+
     - name: Ensure official GPG key is imported
       ansible.builtin.rpm_key:
         state: present
