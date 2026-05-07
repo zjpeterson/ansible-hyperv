@@ -8,3 +8,8 @@
       microsoft.hyperv.hv_vm:
         name: "{{ hyperv_vm_name }}"
         state: absent
+
+    - name: Delete VHD
+      ansible.windows.win_file:
+        path: D:\VHD\{{ hyperv_vm_name }}.vhdx
+        state: absent
