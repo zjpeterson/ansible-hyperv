@@ -9,4 +9,9 @@
           - SecurityUpdates
           - CriticalUpdates
           - UpdateRollups
-        reboot: true
+        reboot: false
+      notify: Reboot
+
+  handlers:
+    - name: Reboot
+      ansible.windows.win_reboot:
