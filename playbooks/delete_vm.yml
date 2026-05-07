@@ -1,0 +1,10 @@
+---
+- name: Delete Hyper-V VM
+  hosts: hypervisor
+  gather_facts: false
+
+  tasks:
+    - name: Delete VM
+      microsoft.hyperv.hv_vm:
+        name: "{{ hyperv_vm_name }}"
+        state: absent
